@@ -17,7 +17,7 @@ public class SegmentTreeMax {
         buildTree(0, 0, n - 1);
     }
 
-    // 构建线段树
+    // 构建线段树 - 改为求最大值
     private void buildTree(int node, int start, int end) {
         if (start == end) {
             tree[node] = data[start];
@@ -31,22 +31,23 @@ public class SegmentTreeMax {
         buildTree(leftNode, start, mid);
         buildTree(rightNode, mid + 1, end);
 
-        tree[node] = tree[leftNode] + tree[rightNode];
+        // 改为取左右子树的最大值
+        tree[node] = Math.max(tree[leftNode], tree[rightNode]);
     }
 
-    // 区间查询
+    // 区间查询最大值
     public int query(int l, int r) {
         return query(0, 0, n - 1, l, r);
     }
 
     private int query(int node, int start, int end, int l, int r) {
         if (r < start || l > end) {
-            return 0;
+            return Integer.MIN_VALUE; // 返回最小值而不是0
         }
 
         // 懒标记下推
         if (lazy[node] != 0) {
-            tree[node] += (end - start + 1) * lazy[node];
+            tree[node] += lazy[node]; // 最大值只需要加一次，不需要乘以区间长度
             if (start != end) {
                 lazy[2 * node + 1] += lazy[node];
                 lazy[2 * node + 2] += lazy[node];
@@ -62,10 +63,10 @@ public class SegmentTreeMax {
         int leftNode = 2 * node + 1;
         int rightNode = 2 * node + 2;
 
-        int leftSum = query(leftNode, start, mid, l, r);
-        int rightSum = query(rightNode, mid + 1, end, l, r);
+        int leftMax = query(leftNode, start, mid, l, r);
+        int rightMax = query(rightNode, mid + 1, end, l, r);
 
-        return leftSum + rightSum;
+        return Math.max(leftMax, rightMax); // 返回左右区间的最大值
     }
 
     public void update(int idx, int val) {
@@ -79,7 +80,7 @@ public class SegmentTreeMax {
     private void update(int node, int start, int end, int l, int r, int val) {
         // 懒标记下推
         if (lazy[node] != 0) {
-            tree[node] += val;
+            tree[node] += lazy[node]; // 最大值只需要加一次
             if (start != end) {
                 lazy[2 * node + 1] += lazy[node];
                 lazy[2 * node + 2] += lazy[node];
@@ -92,7 +93,7 @@ public class SegmentTreeMax {
         }
 
         if (l <= start && end <= r) {
-            tree[node] += (end - start + 1) * val;
+            tree[node] += val; // 最大值只需要加一次，不需要乘以区间长度
             if (start != end) {
                 lazy[2 * node + 1] += val;
                 lazy[2 * node + 2] += val;
@@ -107,7 +108,8 @@ public class SegmentTreeMax {
         update(leftNode, start, mid, l, r, val);
         update(rightNode, mid + 1, end, l, r, val);
 
-        tree[node] = tree[leftNode] + tree[rightNode];
+        // 更新父节点为左右子树的最大值
+        tree[node] = Math.max(tree[leftNode], tree[rightNode]);
     }
 
     public static void main(String[] args) {
@@ -120,17 +122,22 @@ public class SegmentTreeMax {
         }
         System.out.println();
 
-        // 查询区间 [1, 4] 的和
-        System.out.println("Sum of range [1, 4]: " + st.query(1, 4));
+        // 查询区间 [1, 4] 的最大值
+        // 9
+        System.out.println("Max of range [1, 4]: " + st.query(1, 4));
 
         // 更新区间 [1, 3] 每个元素加 2
         st.update(1, 3, 2);
+        // [1, 5, 7, 9, 9, 11]
         System.out.println("After updating range [1, 3] by adding 2:");
-        System.out.println("Sum of range [1, 4]: " + st.query(1, 4));
+        // 9
+        System.out.println("Max of range [1, 4]: " + st.query(1, 4));
 
         // 更新单点
         st.update(2, 10);
+        // [1, 5, 17, 9, 9, 11]
         System.out.println("After updating index 2 to 10:");
-        System.out.println("Sum of range [1, 4]: " + st.query(1, 4));
+        // 17
+        System.out.println("Max of range [1, 4]: " + st.query(1, 4));
     }
 }
