@@ -1,4 +1,4 @@
-package org.noexcs.basic.algo;
+package org.noexcs.basic.algo.tree;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
